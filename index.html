@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Colectivo</title>
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>Mi Colectivo (Línea A)</h1>
+    </header>
+
+    <main>
+        <div class="buscador-container">
+            <label for="selector-parada">¿Dónde estás?</label>
+            
+            <select id="selector-parada">
+                <option value="" disabled selected>Cargando paradas...</option>
+            </select>
+
+            <div id="resultado-container">
+                <p class="titulo-proximo">Tu próximo colectivo pasa a las:</p>
+                <div id="hora-grande">--:--</div>
+                <p id="info-extra">Selecciona una parada</p>
+            </div>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+
+</body>
+</html>
