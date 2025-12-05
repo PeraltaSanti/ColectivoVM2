@@ -3,27 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Colectivo</title>
+    <title>Mi Colectivo - Línea A</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <header>
-        <h1>Mi Colectivo (Línea A)</h1>
-    </header>
-
     <main>
-        <div class="buscador-container">
-            <label for="selector-parada">¿Dónde estás?</label>
-            
-            <select id="selector-parada">
-                <option value="" disabled selected>Cargando paradas...</option>
-            </select>
+        <header>
+            <h1>Línea A</h1>
+            <p id="fecha-hoy">Cargando fecha...</p>
+        </header>
 
-            <div id="resultado-container">
-                <p class="titulo-proximo">Tu próximo colectivo pasa a las:</p>
+        <div class="card-container">
+            <label for="selector-parada">SELECCIONA TU PARADA</label>
+            
+            <div class="select-wrapper">
+                <select id="selector-parada">
+                    <option value="" disabled selected>Toca para elegir...</option>
+                </select>
+            </div>
+
+            <div id="resultado-card" class="resultado-hidden">
+                <p class="label-proximo">PRÓXIMO SERVICIO</p>
                 <div id="hora-grande">--:--</div>
+                
+                <div id="badge-minutos">--</div>
+                
                 <p id="info-extra">Selecciona una parada</p>
             </div>
         </div>
