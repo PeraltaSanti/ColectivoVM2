@@ -1,11 +1,19 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // Referencias a los elementos de la pantalla
     const selector = document.getElementById('selector-parada');
     const displayHora = document.getElementById('hora-grande');
     const displayInfo = document.getElementById('info-extra');
+    const displayBadge = document.getElementById('badge-minutos');
+    const displayFecha = document.getElementById('fecha-hoy');
+    const resultadoCard = document.getElementById('resultado-card');
 
-    // --- DATOS INCRUSTADOS (Ya no buscamos el archivo externo) ---
+    // 1. Mostrar fecha actual
+    const opcionesFecha = { weekday: 'long', day: 'numeric', month: 'long' };
+    const fechaTexto = new Date().toLocaleDateString('es-ES', opcionesFecha);
+    // Ponemos la primera letra en mayúscula
+    displayFecha.textContent = fechaTexto.charAt(0).toUpperCase() + fechaTexto.slice(1);
+
+    // 2. DATOS COMPLETOS DE HORARIOS (Incrustados)
     const datosHorarios = {
       "lunes_a_viernes": [
         {"Salida Facultad": "05:18", "Terminal": "05:30", "Balcarce y Urquiza": "05:44", "L.Guillet y G. Paz": "05:51", "Entrada Ate 2": "06:03", "Salida F. Sarmiento": "06:17", "Nelson e Yrigoyen": "06:31", "G. Paz y Maipú": "06:47", "Llegada Facultad": "07:02"},
@@ -135,10 +143,14 @@ document.addEventListener('DOMContentLoaded', () => {
       ]
     };
 
-    // --- 2. LLENAR LA LISTA DESPLEGABLE ---
+    // 3. Lógica de Carga (Automática porque los datos ya están arriba)
+    if (datosHorarios && datosHorarios.lunes_a_viernes) {
+        const paradas = Object.keys(datosHorarios.lunes_a_viernes[0]);
+        llenarSelector(paradas);
+    }
+
     function llenarSelector(paradas) {
-        selector.innerHTML = '<option value="" disabled selected>Selecciona tu parada...</option>';
-        
+        selector.innerHTML = '<option value="" disabled selected>Toca para elegir parada...</option>';
         paradas.forEach(parada => {
             const option = document.createElement('option');
             option.value = parada;
@@ -147,88 +159,97 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 3. CEREBRO: BUSCAR EL HORARIO ---
+    // 4. EL CEREBRO DE LA APP (Buscador y Cuenta Regresiva)
     function buscarProximoColectivo() {
         const paradaSeleccionada = selector.value;
-        
         if (!paradaSeleccionada) return;
 
         const ahora = new Date();
-        const diaSemana = ahora.getDay(); // 0=Domingo, 1=Lunes... 6=Sábado
+        const diaSemana = ahora.getDay(); // 0=Domingo... 6=Sábado
         const horaActual = ahora.getHours();
         const minutosActuales = ahora.getMinutes();
         
-        // Minutos totales desde las 00:00 (Ej: 01:00 AM = 60 minutos)
+        // Convertimos todo a minutos para calcular fácil
         const minutosTotalesAhora = (horaActual * 60) + minutosActuales;
 
-        // Elegir la lista correcta según el día
+        // Selección del día
         let listaViajes = [];
         let nombreDia = "";
 
         if (diaSemana === 0) {
-            listaViajes = datosHorarios.domingos;
+            listaViajes = datosHorarios.domingos || [];
             nombreDia = "Domingo";
         } else if (diaSemana === 6) {
-            listaViajes = datosHorarios.sabados;
+            listaViajes = datosHorarios.sabados || [];
             nombreDia = "Sábado";
         } else {
-            listaViajes = datosHorarios.lunes_a_viernes;
+            listaViajes = datosHorarios.lunes_a_viernes || [];
             nombreDia = "Lunes a Viernes";
         }
 
         let proximoHorario = null;
+        let minutosFaltantes = null;
 
-        // Buscar en la lista
+        // Buscar el próximo horario
         for (let viaje of listaViajes) {
             const horarioTexto = viaje[paradaSeleccionada]; 
 
-            // Verificamos que el horario exista y no sea null ni "---"
             if (horarioTexto && horarioTexto !== "---") {
                 const [hStr, mStr] = horarioTexto.split(':');
                 const h = parseInt(hStr);
                 const m = parseInt(mStr);
-
                 let minutosViaje = (h * 60) + m;
 
-                // TRUCO PARA LA MADRUGADA:
-                // Si el colectivo pasa entre las 00:00 y las 04:00, le sumamos 24hs
+                // Si es de madrugada (ej: 00:30), le sumamos 24 horas (1440 min)
                 if (h < 4) {
                     minutosViaje += 24 * 60;
                 }
 
-                // Si este colectivo pasa DESPUÉS de ahora...
+                // Si el viaje es en el futuro...
                 if (minutosViaje > minutosTotalesAhora) {
                     proximoHorario = horarioTexto;
+                    minutosFaltantes = minutosViaje - minutosTotalesAhora;
                     break; // ¡Encontrado!
                 }
             }
         }
 
-        // Mostrar resultado
+        // 5. MOSTRAR RESULTADOS
         if (proximoHorario) {
+            // Activamos estilo azul/violeta
+            resultadoCard.classList.remove('resultado-hidden');
+            resultadoCard.style.background = 'var(--highlight-gradient)';
+            
             displayHora.textContent = proximoHorario;
-            displayInfo.textContent = `Próximo servicio (${nombreDia})`;
-            displayHora.style.color = "#005a9c";
+            displayInfo.textContent = `Servicio de ${nombreDia}`;
+            
+            // Lógica de minutos faltantes
+            if (minutosFaltantes === 0) {
+                displayBadge.textContent = "¡Ahora!";
+            } else if (minutosFaltantes < 60) {
+                displayBadge.textContent = `En ${minutosFaltantes} min`;
+            } else {
+                const horas = Math.floor(minutosFaltantes / 60);
+                const mins = minutosFaltantes % 60;
+                displayBadge.textContent = `En ${horas}h ${mins}m`;
+            }
+
         } else {
-            displayHora.textContent = "---";
-            displayInfo.textContent = `No hay más servicios por hoy (${nombreDia})`;
-            displayHora.style.color = "#d32f2f";
+            // Estilo rojo/naranja si ya no hay colectivos
+            resultadoCard.classList.remove('resultado-hidden');
+            resultadoCard.style.background = 'var(--highlight-gradient-red)'; // Un degradado rojizo para indicar "fin"
+            
+            displayHora.textContent = "--:--";
+            displayBadge.textContent = "Fin del día";
+            displayInfo.textContent = `No hay más servicios hoy (${nombreDia})`;
         }
     }
 
-    // --- ARRANQUE AUTOMÁTICO ---
-    // Usamos las paradas de "Lunes a Viernes" como referencia para llenar la lista
-    if (datosHorarios.lunes_a_viernes && datosHorarios.lunes_a_viernes.length > 0) {
-        const paradas = Object.keys(datosHorarios.lunes_a_viernes[0]);
-        llenarSelector(paradas);
-    } else {
-        displayInfo.textContent = "Error: No hay datos de paradas.";
-    }
-
-    // Escuchar cambios
+    // Eventos
     selector.addEventListener('change', buscarProximoColectivo);
+    
+    // Actualizar cada 30 segundos
     setInterval(() => {
         if(selector.value) buscarProximoColectivo();
     }, 30000);
-
 });
