@@ -1,14 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ELEMENTOS
-    const pantallaPrincipal = document.getElementById('pantalla-principal');
-    const pantallaTablas = document.getElementById('pantalla-tablas');
+    // --- ELEMENTOS DEL DOM ---
     const selector = document.getElementById('selector-parada');
     const displayFecha = document.getElementById('fecha-hoy');
     const timelineContainer = document.getElementById('timeline-container');
     const mensajeError = document.getElementById('mensaje-error');
     
-    // Timeline
+    // Elementos del Timeline
     const prevHora = document.getElementById('prev-hora');
     const mainHora = document.getElementById('main-hora');
     const mainCountdown = document.getElementById('main-countdown');
@@ -17,14 +15,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const next2Hora = document.getElementById('next2-hora');
     const next2Diff = document.getElementById('next2-diff');
 
-    // Botones y Tablas
+    // Botones
     const btnVerTablas = document.getElementById('btn-ver-tablas');
     const btnVolver = document.getElementById('btn-volver');
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tablaHead = document.querySelector('#tabla-completa thead');
     const tablaBody = document.querySelector('#tabla-completa tbody');
+    const pantallaPrincipal = document.getElementById('pantalla-principal');
+    const pantallaTablas = document.getElementById('pantalla-tablas');
 
-    // --- DATOS COMPLETOS ---
+    // --- BASE DE DATOS DE HORARIOS ---
     const datosHorarios = {
         "lunes_a_viernes": [
             {"Salida Facultad": "05:18", "Terminal": "05:30", "Balcarce y Urquiza": "05:44", "L.Guillet y G. Paz": "05:51", "Entrada Ate 2": "06:03", "Salida F. Sarmiento": "06:17", "Nelson e Yrigoyen": "06:31", "G. Paz y Maipú": "06:47", "Llegada Facultad": "07:02"},
