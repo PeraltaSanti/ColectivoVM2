@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mi Colectivo</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ff3b30">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="leaflet.css">
+    <link rel="stylesheet" href="style.css?v=21">
+</head>
+<body>
+
+    <!-- Fondo (skin) de marca, configurable desde window.APP_SKIN -->
+    <div id="brand-bg" aria-hidden="true"></div>
+
+    <main id="pantalla-principal">
+        <header>
+            <div class="header-grid">
+                <div class="header-brand">
+                    <img id="brand-logo" class="brand-logo hidden" alt="Marca">
+                </div>
+
+                <div class="header-center">
+                    <h1>Línea A</h1>
+                    <p id="fecha-hoy">Cargando...</p>
+                </div>
+
+                <div class="header-actions" aria-label="Tema">
+                    <div class="theme-toggle" role="group" aria-label="Fondo">
+                        <button id="btn-theme-dark" class="theme-btn active" type="button" aria-label="Fondo oscuro">🌙</button>
+                        <button id="btn-theme-light" class="theme-btn" type="button" aria-label="Fondo claro">☀️</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="card-container">
+
+            <!-- Publicidad (rotativa). Se completa desde app.js usando ads/ads.json -->
+            <div id="ad-slot-top" class="ad-slot" aria-label="Publicidad"></div>
+
+            <label>LÍNEA</label>
+
+            <div class="segmented" role="tablist" aria-label="Línea">
+                <button id="seg-linea-a" class="seg-btn active" type="button" data-linea="A" role="tab" aria-selected="true">Línea A</button>
+                <button id="seg-linea-e" class="seg-btn" type="button" data-linea="E" role="tab" aria-selected="false">Línea E</button>
+                <button id="seg-linea-este" class="seg-btn" type="button" data-linea="ESTE" role="tab" aria-selected="false">Línea ESTE</button>
+                <button id="seg-linea-oeste" class="seg-btn" type="button" data-linea="OESTE" role="tab" aria-selected="false">Línea OESTE</button>
+            </div>
+
+            <select id="selector-linea" class="sr-only" aria-hidden="true" tabindex="-1">
+                <option value="A" selected>Línea A</option>
+                <option value="E">Línea E</option>
+                <option value="ESTE">Línea ESTE</option>
+                <option value="OESTE">Línea OESTE</option>
+            </select>
+
+            <label>HORARIO</label>
+
+            <!-- Segmented control (más rápido que un select) -->
+            <div class="segmented" role="tablist" aria-label="Horarios">
+                <button id="seg-regular" class="seg-btn" type="button" data-value="regular" role="tab" aria-selected="true">Ciclo lectivo</button>
+                <button id="seg-verano" class="seg-btn" type="button" data-value="receso_verano" role="tab" aria-selected="false">Receso de verano</button>
+            </div>
+
+            <!-- Select oculto (mantiene compatibilidad con el JS) -->
+            <select id="selector-temporada" class="sr-only" aria-hidden="true" tabindex="-1">
+                <option value="regular" selected>Ciclo lectivo</option>
+                <option value="receso_verano">Receso de verano</option>
+            </select>
+
+            <label for="selector-parada">TU PARADA</label>
+            <div class="select-wrapper">
+                <select id="selector-parada">
+                    <option value="" disabled selected>Cargando datos...</option>
+                </select>
+            </div>
+
+            <div class="row-actions">
+                <button id="btn-guardar-fav" class="btn-mini btn-outline" type="button">Guardar favorita</button>
+                <button id="btn-usar-fav" class="btn-mini btn-primary" type="button" disabled>Ir a favorita</button>
+            </div>
+            <p id="fav-info" class="hint">Favorita: —</p>
+
+            <div id="timeline-container" class="hidden">
+                
+                <div class="timeline-item pasado">
+                    <div class="time-col" id="prev-hora">--:--</div>
+                    <div class="info-col">Anterior</div>
+                </div>
+
+                <div class="timeline-item destacado">
+                    <div class="badge-status">PRÓXIMO</div>
+                    <div class="time-main" id="main-hora">--:--</div>
+                    <div class="countdown" id="main-countdown">-- min</div>
+                </div>
+
+                <div class="timeline-item futuro">
+                    <div class="time-col" id="next1-hora">--:--</div>
+                    <div class="info-col" id="next1-diff">-- min</div>
+                </div>
+
+                <div class="timeline-item futuro">
+                    <div class="time-col" id="next2-hora">--:--</div>
+                    <div class="info-col" id="next2-diff">-- min</div>
+                </div>
+
+            </div>
+            
+            <p id="mensaje-error" class="mensaje-vacio">Selecciona una parada</p>
+        </div>
+
+        <div class="bottom-actions">
+            <button id="btn-ver-mapa" class="btn-secundario" type="button">
+                Mapa y paradas
+            </button>
+            <button id="btn-ver-tablas" class="btn-secundario" type="button">
+                Ver grilla completa
+            </button>
+        </div>
+    </main>
+
+    <section id="pantalla-tablas" class="hidden">
+        <div class="header-tablas">
+            <button id="btn-volver" class="btn-volver">← Volver</button>
+            <h2>Grilla Completa</h2>
+        </div>
+
+        <div class="tabs-container">
+            <button class="tab-btn active" data-dia="lunes_a_viernes">Lun-Vie</button>
+            <button class="tab-btn" data-dia="sabados">Sábados</button>
+            <button class="tab-btn" data-dia="domingos">Dom/Fer</button>
+        </div>
+
+        <div class="tabla-scroll">
+            <table id="tabla-completa">
+                <thead></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+
+
+    <section id="pantalla-mapa" class="hidden">
+        <div class="header-tablas">
+            <button id="btn-volver-mapa" class="btn-volver">← Volver</button>
+            <h2>Mapa y paradas</h2>
+            <div style="width: 64px;"></div>
+        </div>
+
+        <div class="map-toolbar">
+            <div class="tool-row">
+                <button id="btn-centrar-mapa" class="btn-mini btn-outline" type="button">Centrar</button>
+
+                <label class="chk-inline">
+                    <input type="checkbox" id="chk-todas-paradas" checked>
+                    <span>Mostrar todas</span>
+                </label>
+            </div>
+
+            <div class="tool-row">
+                <button id="btn-mi-ubicacion" class="btn-mini btn-primary" type="button">Mi ubicación</button>
+                <div class="search-wrap">
+                    <input id="inp-buscar-parada" class="search-input" type="text" placeholder="Buscar parada..." autocomplete="off">
+                    <div id="buscar-resultados" class="search-results hidden"></div>
+                </div>
+            </div>
+
+            <div class="tool-row">
+                <select id="sel-modo-mapa" class="select-inline">
+                    <option value="ver" selected>Ver</option>
+                    <option value="asignar">Asignar paradas</option>
+                </select>
+
+                <select id="sel-parada-logica" class="select-inline" disabled>
+                    <option value="" disabled selected>Elegí una parada…</option>
+                </select>
+
+                <button id="btn-reset-mapeo" class="btn-mini btn-outline" type="button" disabled>Restaurar</button>
+            </div>
+
+            <p id="map-hint" class="hint">Tocá una parada para seleccionarla. En “Asignar paradas” podés corregir la ubicación.</p>
+        </div>
+
+        <div id="map" class="map-canvas"></div>
+    </section>
+
+
+    <!-- Panel Admin de publicidades (se abre manteniendo presionado el banner de publicidad) -->
+    <section id="admin-ads-modal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Panel de publicidades">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Panel de publicidades</h3>
+                <button id="btn-admin-ads-cerrar" class="btn-mini btn-outline" type="button">Cerrar</button>
+            </div>
+
+            <!-- Bloque de acceso -->
+            <div id="admin-ads-lock" class="modal-body">
+                <p id="admin-ads-lock-title" class="admin-title">Ingresá la clave</p>
+                <input id="admin-ads-pass" class="admin-input" type="password" placeholder="Clave" autocomplete="current-password">
+                <div class="admin-actions">
+                    <button id="btn-admin-ads-login" class="btn-mini btn-primary" type="button">Entrar</button>
+                    <button id="btn-admin-ads-setpass" class="btn-mini btn-outline" type="button">Crear / Cambiar clave</button>
+                </div>
+                <p id="admin-ads-msg" class="hint">Tip: mantené presionado el banner de publicidad (arriba) para abrir este panel.</p>
+            </div>
+
+            <!-- Panel (oculto hasta autenticar) -->
+            <div id="admin-ads-panel" class="modal-body hidden">
+                <div class="admin-tabs">
+                    <button class="admin-tab active" type="button" data-tab="campanas">Campañas</button>
+                    <button class="admin-tab" type="button" data-tab="nueva">Nueva</button>
+                    <button class="admin-tab" type="button" data-tab="stats">Estadísticas</button>
+                    <button class="admin-tab" type="button" data-tab="ajustes">Ajustes</button>
+                </div>
+
+                <div id="admin-ads-pages">
+                    <div id="admin-page-campanas" class="admin-page"></div>
+                    <div id="admin-page-nueva" class="admin-page hidden"></div>
+                    <div id="admin-page-stats" class="admin-page hidden"></div>
+                    <div id="admin-page-ajustes" class="admin-page hidden"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <script src="leaflet.js"></script>
+    <script src="mapdata_all.js?v=21"></script>
+    <script src="horarios.js?v=21"></script>
+
+    <!-- Configuración rápida de marca (cambiá rutas por las tuyas) -->
+    <script>
+        window.APP_SKIN = {
+            bg: 'brand/black_tucan_bg.jpg',
+            logo: 'brand/black_tucan_logo.png'
+        };
+    </script>
+
+    <script src="app.js?v=21"></script>
+</body>
+</html>
