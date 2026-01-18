@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "updated_at": "2026-01-16",
+  "ads": [
+    {
+      "id": "demo_vm_almacen",
+      "type": "image",
+      "src": "ads/demo_la_esquina.svg",
+      "href": "https://wa.me/5490000000000",
+      "alt": "Publicidad - Demo Almacén La Esquina",
+      "placements": ["horarios_top"],
+      "lines": ["ALL"],
+      "start_date": "2026-01-01",
+      "end_date": "2026-12-31",
+      "weight": 2
+    },
+    {
+      "id": "demo_vm_taller",
+      "type": "image",
+      "src": "ads/demo_taller.svg",
+      "href": "https://instagram.com",
+      "alt": "Publicidad - Demo Taller Mecánico",
+      "placements": ["horarios_top"],
+      "lines": ["ALL"],
+      "start_date": "2026-01-01",
+      "end_date": "2026-12-31",
+      "weight": 1
+    }
+  ]
+}
