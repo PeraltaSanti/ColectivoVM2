@@ -1,0 +1,94 @@
+{
+  "version": 3,
+  "rotation": {
+    "main_ms": 15000,
+    "promo_ms": 5000
+  },
+  "sponsors": [
+    {
+      "id": "blacktucan",
+      "name": "BlackTucan",
+      "active": true,
+      "main": {
+        "hero_webp": "ads/blacktucan/hero.webp?v=27",
+        "hero_fallback": "ads/blacktucan/fallback.jpg?v=27",
+        "takeover_webp": "ads/blacktucan/takeover.webp?v=27",
+        "takeover_fallback": "ads/blacktucan/takeover.jpg?v=27",
+        "href": "https://www.instagram.com/blacktucan/",
+        "alt": "BlackTucan — Burger & Birra"
+      },
+      "promos": [
+        {
+          "id": "bt_promo_img_2x1",
+          "type": "image",
+          "src": "ads/blacktucan/promo_2x1.svg?v=27",
+          "href": "https://www.instagram.com/blacktucan/",
+          "alt": "Promo 2x1 BlackTucan"
+        },
+        {
+          "id": "bt_promo_card_1",
+          "type": "card",
+          "title": "Promo del día",
+          "subtitle": "Consultá el menú y descuentos en Instagram",
+          "foot": "@blacktucan • Villa Mercedes",
+          "href": "https://www.instagram.com/blacktucan/"
+        }
+      ]
+    },
+    {
+      "id": "tallereltoro",
+      "name": "Taller Mecánico El Toro",
+      "active": true,
+      "main": {
+        "hero_svg": "ads/demo_taller.svg?v=27",
+        "href": "https://instagram.com",
+        "alt": "Taller Mecánico El Toro"
+      },
+      "promos": [
+        {
+          "id": "toro_promo_img",
+          "type": "image",
+          "src": "ads/demo_taller.svg?v=27",
+          "href": "https://instagram.com",
+          "alt": "Promo Taller Mecánico El Toro"
+        },
+        {
+          "id": "toro_promo_card",
+          "type": "card",
+          "title": "Diagnóstico y service",
+          "subtitle": "Tren delantero • Electricidad • Diagnóstico",
+          "foot": "Villa Mercedes — Turnos por Instagram",
+          "href": "https://instagram.com"
+        }
+      ]
+    },
+    {
+      "id": "almacenlaesquina",
+      "name": "Almacén La Esquina",
+      "active": true,
+      "main": {
+        "hero_svg": "ads/demo_la_esquina.svg?v=27",
+        "href": "https://wa.me/5490000000000",
+        "alt": "Almacén La Esquina"
+      },
+      "promos": [
+        {
+          "id": "esquina_promo_card",
+          "type": "card",
+          "title": "Abierto hasta tarde",
+          "subtitle": "Fiambrería • Bebidas • Kiosco",
+          "foot": "Envíos por WhatsApp",
+          "href": "https://wa.me/5490000000000"
+        },
+        {
+          "id": "esquina_promo_img",
+          "type": "image",
+          "src": "ads/demo_la_esquina.svg?v=27",
+          "href": "https://wa.me/5490000000000",
+          "alt": "Promo Almacén La Esquina"
+        }
+      ]
+    }
+  ],
+  "ads": []
+}
