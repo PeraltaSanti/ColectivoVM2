@@ -1234,6 +1234,37 @@ body[data-ui-theme="light"] .mk-marker--badge .mk-badge {
 .mk-marker--dest.mk-marker--pin .mk-pin-inner {
     fill: rgba(18,18,18,0.24);
 }
+
+/* =============================
+   MAP ROUTE (Degradé + Flechas de sentido)
+   ============================= */
+
+.route-arrow-icon {
+    background: transparent;
+    border: none;
+}
+
+.route-arrow {
+    width: 18px;
+    height: 18px;
+    transform: rotate(var(--rot, 0deg));
+    transform-origin: 50% 50%;
+    filter: drop-shadow(0 8px 12px rgba(0,0,0,0.35));
+    pointer-events: none;
+}
+
+.route-arrow svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+}
+
+.route-arrow path {
+    fill: var(--col, rgba(var(--accent-rgb), 0.95));
+    stroke: rgba(255,255,255,0.78);
+    stroke-width: 1.1;
+    stroke-linejoin: round;
+}
 /* =============================
    PUBLICIDAD (Banner superior)
    Fix: evita que el SVG/imagen se “desborde” del card.
