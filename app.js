@@ -1,5 +1,10 @@
-document.addEventListener('DOMContentLoaded', () => {
+    if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
+}
 
+document.addEventListener('DOMContentLoaded', () => {
     // ELEMENTOS
     const pantallaPrincipal = document.getElementById('pantalla-principal');
     const pantallaTablas = document.getElementById('pantalla-tablas');
