@@ -55,7 +55,7 @@
     {
       "id": "tallereltoro",
       "name": "Taller Mecánico El Toro",
-      "active": true,
+      "active": false,
       "main": {
         "hero_svg": "main/hero.svg",
         "href": "https://instagram.com",
@@ -85,7 +85,7 @@
     {
       "id": "almacenlaesquina",
       "name": "Almacén La Esquina",
-      "active": true,
+      "active": false,
       "main": {
         "hero_svg": "main/hero.svg",
         "href": "https://wa.me/5490000000000",
