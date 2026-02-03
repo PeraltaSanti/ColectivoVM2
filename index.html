@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mi Colectivo</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ff3b30">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="leaflet.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Fondo takeover (blur + overlay). Se muestra solo con .takeover-on -->
+    <div id="takeover-bg" class="takeover-bg" aria-hidden="true"></div>
+
+    <main id="pantalla-principal">
+        <header>
+            <div class="header-grid">
+                <div class="header-spacer"></div>
+
+                <div class="header-center">
+                    <h1>Línea A</h1>
+                    <p id="fecha-hoy">Cargando...</p>
+                </div>
+
+                <div class="header-actions" aria-label="Acciones">
+                    <div class="theme-toggle" role="group" aria-label="Fondo">
+                        <button id="btn-theme-dark" class="theme-btn active" type="button" aria-label="Fondo oscuro">🌙</button>
+                        <button id="btn-theme-light" class="theme-btn" type="button" aria-label="Fondo claro">☀️</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- TAKEOVER (Sponsor activo). Imagen superior tipo "hero" (clickable) -->
+        <a id="takeover-hero-link" class="takeover-hero-link" href="#" target="_blank" rel="noopener noreferrer" aria-label="Abrir sponsor">
+            <div class="takeover-hero" id="takeover-hero" aria-label="Sponsor">
+                <!-- Picture: intenta WEBP si existe, sino cae a JPG. El ?v=27 evita cache viejo. -->
+                <picture>
+                    <source id="takeover-hero-webp" srcset="" type="image/webp">
+                    <img id="takeover-hero-img" class="takeover-media" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Sponsor" />
+                </picture>
+            </div>
+        </a>
+
+        <div class="card-container">
+
+            <!-- Publicidad (rotativa). Se completa desde app.js usando ads/ads.json -->
+            <div id="ad-slot-top" class="ad-slot" aria-label="Publicidad"></div>
+
+            <!-- Entrada a Promociones (se muestra solo si hay sponsors activos) -->
+            <div id="promos-entry" class="promos-entry hidden" aria-label="Ofertas y promociones">
+                <button id="btn-promos" class="promos-cta" type="button">OFERTAS Y PROMOCIONES</button>
+            </div>
+
+            <label>LÍNEA</label>
+
+            <div class="segmented" role="tablist" aria-label="Línea">
+                <button id="seg-linea-a" class="seg-btn active" type="button" data-linea="A" role="tab" aria-selected="true">Línea A</button>
+                <button id="seg-linea-e" class="seg-btn" type="button" data-linea="E" role="tab" aria-selected="false">Línea E</button>
+                <button id="seg-linea-este" class="seg-btn" type="button" data-linea="ESTE" role="tab" aria-selected="false">Línea ESTE</button>
+                <button id="seg-linea-oeste" class="seg-btn" type="button" data-linea="OESTE" role="tab" aria-selected="false">Línea OESTE</button>
+            </div>
+
+            <select id="selector-linea" class="sr-only" aria-hidden="true" tabindex="-1">
+                <option value="A" selected>Línea A</option>
+                <option value="E">Línea E</option>
+                <option value="ESTE">Línea ESTE</option>
+                <option value="OESTE">Línea OESTE</option>
+            </select>
+
+            <label>HORARIO</label>
+
+            <!-- Segmented control (más rápido que un select) -->
+            <div class="segmented" role="tablist" aria-label="Horarios">
+                <button id="seg-regular" class="seg-btn" type="button" data-value="regular" role="tab" aria-selected="true">Ciclo lectivo</button>
+                <button id="seg-verano" class="seg-btn" type="button" data-value="receso_verano" role="tab" aria-selected="false">Receso de verano</button>
+            </div>
+
+            <!-- Select oculto (mantiene compatibilidad con el JS) -->
+            <select id="selector-temporada" class="sr-only" aria-hidden="true" tabindex="-1">
+                <option value="regular" selected>Ciclo lectivo</option>
+                <option value="receso_verano">Receso de verano</option>
+            </select>
+
+            <label for="selector-parada">TU PARADA</label>
+            <div class="select-wrapper">
+                <select id="selector-parada">
+                    <option value="" disabled selected>Cargando datos...</option>
+                </select>
+            </div>
+
+            <div class="row-actions">
+                <button id="btn-guardar-fav" class="btn-mini btn-outline" type="button">Guardar favorita</button>
+                <button id="btn-usar-fav" class="btn-mini btn-primary" type="button" disabled>Ir a favorita</button>
+            </div>
+            <p id="fav-info" class="hint">Favorita: —</p>
+
+            <div id="timeline-container" class="hidden">
+                
+                <div class="timeline-item pasado">
+                    <div class="time-col" id="prev-hora">--:--</div>
+                    <div class="info-col">Anterior</div>
+                </div>
+
+                <div class="timeline-item destacado">
+                    <div class="badge-status">PRÓXIMO</div>
+                    <div class="time-main" id="main-hora">--:--</div>
+                    <div class="countdown" id="main-countdown">-- min</div>
+                </div>
+
+                <div class="timeline-item futuro">
+                    <div class="time-col" id="next1-hora">--:--</div>
+                    <div class="info-col" id="next1-diff">-- min</div>
+                </div>
+
+                <div class="timeline-item futuro">
+                    <div class="time-col" id="next2-hora">--:--</div>
+                    <div class="info-col" id="next2-diff">-- min</div>
+                </div>
+
+            </div>
+            
+            <p id="mensaje-error" class="mensaje-vacio">Selecciona una parada</p>
+        </div>
+
+        <div class="bottom-actions">
+            <button id="btn-ver-mapa" class="btn-secundario" type="button">
+                Mapa y paradas
+            </button>
+            <button id="btn-ver-tablas" class="btn-secundario" type="button">
+                Ver grilla completa
+            </button>
+        </div>
+    </main>
+
+    <section id="pantalla-tablas" class="hidden">
+        <div class="header-tablas">
+            <button id="btn-volver" class="btn-volver">← Volver</button>
+            <h2>Grilla Completa</h2>
+        </div>
+
+        <div class="tabs-container">
+            <button class="tab-btn active" data-dia="lunes_a_viernes">Lun-Vie</button>
+            <button class="tab-btn" data-dia="sabados">Sábados</button>
+            <button class="tab-btn" data-dia="domingos">Dom/Fer</button>
+        </div>
+
+        <div class="tabla-scroll">
+            <table id="tabla-completa">
+                <thead></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+
+
+    <section id="pantalla-mapa" class="hidden">
+        <div class="header-tablas">
+            <button id="btn-volver-mapa" class="btn-volver">← Volver</button>
+            <h2>Mapa y paradas</h2>
+            <div style="width: 64px;"></div>
+        </div>
+
+        <div class="map-toolbar">
+            <div class="tool-row">
+                <button id="btn-centrar-mapa" class="btn-mini btn-outline" type="button">Centrar</button>
+
+                <label class="chk-inline">
+                    <input type="checkbox" id="chk-todas-paradas" checked>
+                    <span>Mostrar todas</span>
+                </label>
+            </div>
+
+            <div class="tool-row">
+                <button id="btn-mi-ubicacion" class="btn-mini btn-primary" type="button">Mi ubicación</button>
+                <div class="search-wrap">
+                    <input id="inp-buscar-parada" class="search-input" type="text" placeholder="Buscar parada..." autocomplete="off">
+                    <div id="buscar-resultados" class="search-results hidden"></div>
+                </div>
+            </div>
+
+            <p id="map-hint" class="hint">Tocá una parada para ver su info. Podés buscar por nombre.</p>
+
+            <!-- Planificador simple (sin internet): origen = mi ubicación, destino = tocando el mapa -->
+            <div class="planner" aria-label="Ir a un lugar">
+                <div class="planner-head">
+                    <div>
+                        <div class="planner-title">Ir a un lugar</div>
+                        <div class="planner-sub">Te recomienda colectivo(s) + transbordo si hace falta.</div>
+                    </div>
+                    <button id="btn-planner-toggle" class="btn-mini btn-outline" type="button">Mostrar</button>
+                </div>
+
+                <div id="planner-body" class="planner-body hidden">
+                    <div class="planner-row">
+                        <button id="btn-planner-origin" class="btn-mini btn-primary" type="button">Usar mi ubicación</button>
+                        <div class="planner-kv">Origen: <span id="planner-origin-label">—</span></div>
+                    </div>
+
+                    <div class="planner-row">
+                        <button id="btn-planner-pick-dest" class="btn-mini btn-outline" type="button">Elegir destino</button>
+                        <button id="btn-planner-clear" class="btn-mini btn-outline" type="button">Limpiar</button>
+                        <div class="planner-kv">Destino: <span id="planner-dest-label">—</span></div>
+                    </div>
+
+                    <div class="planner-row">
+                        <div class="search-wrap planner-search-wrap">
+                            <input id="inp-planner-dest" class="search-input" type="text" placeholder="Buscar destino por texto (parada/lugar)…" autocomplete="off" />
+                            <div id="planner-dest-results" class="search-results hidden" aria-label="Resultados de búsqueda de destino"></div>
+                        </div>
+                    </div>
+
+                    <button id="btn-planner-route" class="btn-mini btn-primary" type="button">Calcular ruta</button>
+                    <div id="planner-results" class="planner-results"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="map" class="map-canvas"></div>
+    </section>
+
+
+    <section id="pantalla-sponsors" class="hidden">
+        <div class="header-tablas">
+            <button id="btn-volver-sponsors" class="btn-volver">← Volver</button>
+            <h2 id="sponsors-title">Promociones</h2>
+            <div style="width: 64px;"></div>
+        </div>
+
+        <div class="sponsors-scroll">
+            <div class="sponsors-page">
+                <div class="sponsors-hero" aria-label="Promociones">
+                    <div class="sponsors-hero-title">Promociones</div>
+                    <div class="sponsors-hero-sub">Ofertas del día y de la semana de comercios locales.</div>
+                </div>
+
+                <div class="sponsors-controls">
+                    <div class="segmented" role="tablist" aria-label="Filtro de promociones">
+                        <button id="seg-spon-hoy" class="seg-btn active" type="button" role="tab" aria-selected="true">Hoy</button>
+                        <button id="seg-spon-semana" class="seg-btn" type="button" role="tab" aria-selected="false">Semana</button>
+                        <button id="seg-spon-todos" class="seg-btn" type="button" role="tab" aria-selected="false">Todo</button>
+                    </div>
+                </div>
+
+                <!-- HUB: Rubros -->
+                <div id="promos-view-hub" class="promos-view" aria-label="Rubros">
+                    <div id="promos-categories" class="promo-cats-grid"></div>
+                    <p id="promos-cats-empty" class="mensaje-vacio hidden">No hay promociones disponibles.</p>
+                </div>
+
+                <!-- RUBRO: Comercios -->
+                <div id="promos-view-category" class="promos-view hidden" aria-label="Comercios por rubro">
+                    <div class="promo-cat-head">
+                        <div id="promo-cat-title" class="promo-cat-title">RUBRO</div>
+                        <div id="promo-cat-sub" class="promo-cat-sub">Elegí un comercio</div>
+                    </div>
+                    <div id="promos-businesses" class="promo-biz-grid"></div>
+                    <p id="promos-biz-empty" class="mensaje-vacio hidden">No hay comercios con promos en este rubro.</p>
+                </div>
+
+                <!-- COMERCIO: Promos estilo Pinterest / Neobrutalism -->
+                <div id="promos-view-sponsor" class="promos-view hidden nb-sponsor" aria-label="Promociones del comercio">
+                    <div class="nb-shell">
+                        <div class="nb-profile" aria-label="Perfil del comercio">
+                            <div class="nb-avatar">
+                                <img id="sponsor-profile-logo" class="nb-avatar-img" src="" alt="Logo del comercio" />
+                            </div>
+
+                            <div class="nb-profile-meta">
+                                <div id="sponsor-profile-name" class="nb-profile-name">—</div>
+                                <div id="sponsor-profile-sub" class="nb-profile-sub">—</div>
+                            </div>
+
+                            <div class="nb-profile-actions" aria-label="Redes del comercio">
+                                <a id="sponsor-ig" class="nb-icbtn hidden" href="#" target="_blank" rel="noopener noreferrer" aria-label="Abrir Instagram">
+                                    <img class="nb-ic" src="ads/ui/instagram.png" alt="Instagram" />
+                                </a>
+                                <a id="sponsor-wa" class="nb-icbtn hidden" href="#" target="_blank" rel="noopener noreferrer" aria-label="Abrir WhatsApp">
+                                    <img class="nb-ic" src="ads/ui/whatsapp.png" alt="WhatsApp" />
+                                </a>
+                                <a id="sponsor-profile-cta" class="nb-pill hidden" href="#" target="_blank" rel="noopener noreferrer">Abrir</a>
+                            </div>
+                        </div>
+
+                        <div id="sponsor-featured" class="nb-featured hidden" aria-label="Promo destacada">
+                            <a id="sponsor-featured-link" class="nb-featured-card" href="#" target="_blank" rel="noopener noreferrer">
+                                <img id="sponsor-featured-img" class="nb-featured-img" src="" alt="Promo destacada" loading="lazy" />
+                                <div class="nb-featured-overlay">
+                                    <span id="sponsor-featured-badge" class="nb-badge">HOY</span>
+                                    <div id="sponsor-featured-title" class="nb-featured-title">Promo</div>
+                                    <div class="nb-featured-cta">PEDÍ YA</div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <div class="nb-feed-head" aria-label="Más promociones">
+                            <div class="nb-feed-title">Más promos</div>
+                            <div class="nb-feed-hint">Explorá como Pinterest</div>
+                        </div>
+
+                        <div id="sponsor-masonry" class="sponsor-masonry nb-masonry" aria-label="Feed de promociones"></div>
+                        <p id="sponsor-masonry-empty" class="mensaje-vacio hidden">No hay promos para mostrar.</p>
+
+                        <div id="sponsor-bottom" class="nb-bottom hidden" aria-label="Acción principal">
+                            <a id="sponsor-bottom-link" class="nb-bottom-btn" href="#" target="_blank" rel="noopener noreferrer">PEDIR POR WHATSAPP</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+
+<!-- Panel Admin de publicidades (se abre manteniendo presionado el banner de publicidad) -->
+    <section id="admin-ads-modal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Panel de publicidades">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Panel de publicidades</h3>
+                <button id="btn-admin-ads-cerrar" class="btn-mini btn-outline" type="button">Cerrar</button>
+            </div>
+
+            <!-- Bloque de acceso -->
+            <div id="admin-ads-lock" class="modal-body">
+                <p id="admin-ads-lock-title" class="admin-title">Ingresá la clave</p>
+                <input id="admin-ads-pass" class="admin-input" type="password" placeholder="Clave" autocomplete="current-password">
+                <div class="admin-actions">
+                    <button id="btn-admin-ads-login" class="btn-mini btn-primary" type="button">Entrar</button>
+                    <button id="btn-admin-ads-setpass" class="btn-mini btn-outline" type="button">Crear / Cambiar clave</button>
+                </div>
+                <p id="admin-ads-msg" class="hint">Tip: mantené presionado el banner de publicidad (arriba) para abrir este panel.</p>
+            </div>
+
+            <!-- Panel (oculto hasta autenticar) -->
+            <div id="admin-ads-panel" class="modal-body hidden">
+                <div class="admin-tabs">
+                    <button class="admin-tab active" type="button" data-tab="campanas">Campañas</button>
+                    <button class="admin-tab" type="button" data-tab="nueva">Nueva</button>
+                    <button class="admin-tab" type="button" data-tab="stats">Estadísticas</button>
+                    <button class="admin-tab" type="button" data-tab="ajustes">Ajustes</button>
+                </div>
+
+                <div id="admin-ads-pages">
+                    <div id="admin-page-campanas" class="admin-page"></div>
+                    <div id="admin-page-nueva" class="admin-page hidden"></div>
+                    <div id="admin-page-stats" class="admin-page hidden"></div>
+                    <div id="admin-page-ajustes" class="admin-page hidden"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <script src="leaflet.js"></script>
+    <script src="mapdata_all.js"></script>
+    <script src="horarios.js"></script>
+    <!-- cache-bust para asegurar que el navegador traiga el app.js nuevo -->
+    <script src="app.js?v=0.3.16.2"></script>
+</body>
+</html>
